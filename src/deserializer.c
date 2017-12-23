@@ -107,27 +107,54 @@ AvroDeserializer_dealloc(AvroDeserializer *self)
 }
 
 static PyObject *
-AvroDeserializer_deserialize(AvroDeserializer *self, PyObject *args)
+AvroDeserializer_deserialize(AvroDeserializer *self, PyObject *args, PyObject *kwds)
 {
     int rval;
     avro_value_t value;
     char *buffer = NULL;
     Py_ssize_t buffer_size;
+    const char *wschema_json = NULL;
+    avro_schema_t wschema;
+
+    static char *kwlist[] = {"buffer", "writer_schema", NULL};
     PyObject *result;
 
-    if (!PyArg_ParseTuple(args, "s#", &buffer, &buffer_size)) {
+    avro_reader_reset(self->datum_reader);
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s#|z", kwlist,
+            &buffer, &buffer_size, &wschema_json)) {
         return NULL;
     }
     avro_reader_memory_set_source(self->datum_reader, buffer, buffer_size);
-    avro_generic_value_new(self->iface, &value);
-    rval = avro_value_read(self->datum_reader, &value);
 
+    avro_generic_value_new(self->iface, &value);
+
+    if(wschema_json == NULL)
+    {
+        // read the readers schema, no resolution needed
+        rval = avro_value_read(self->datum_reader, &value);
+    }
+    else
+    {
+        rval = avro_schema_from_json(wschema_json, 0, &wschema, NULL);
+        avro_value_iface_t* wiface = avro_generic_class_from_schema(wschema);
+
+        avro_value_t source;
+        avro_generic_value_new(wiface, &source);
+
+        rval = avro_value_read_with_resolution(self->datum_reader, &source, &value);
+
+        avro_value_decref(&source);
+        avro_schema_decref(wschema);
+        avro_value_iface_decref(wiface);
+    }
     if (rval) {
         avro_value_decref(&value);
-        set_error_prefix("Read error: ");
+        set_error_prefix("Unable to deserialize data: ");
+        PyErr_Format(PyExc_IOError,
+                        "Deserialization error: %s", avro_strerror());
+
         return NULL;
     }
-
     result = avro_to_python(&self->info, &value);
     avro_value_decref(&value);
     return result;
@@ -147,7 +174,7 @@ static PyMethodDef AvroDeserializer_methods[] = {
     {"close", (PyCFunction)AvroDeserializer_close, METH_VARARGS,
      "Close Avro deserializer."
     },
-    {"deserialize", (PyCFunction)AvroDeserializer_deserialize, METH_VARARGS,
+    {"deserialize", (PyCFunction)AvroDeserializer_deserialize, METH_VARARGS | METH_KEYWORDS,
      "Deserialize a record."
     },
     {NULL}  /* Sentinel */

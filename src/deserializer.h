@@ -33,6 +33,7 @@ typedef struct {
     avro_schema_t schema;
     avro_value_iface_t *iface;
     avro_reader_t datum_reader;
+
 } AvroDeserializer;
 
 extern PyTypeObject avroDeserializerType;

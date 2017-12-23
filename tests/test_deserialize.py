@@ -106,3 +106,55 @@ def test_enum():
     deserializer = pyavroc.AvroDeserializer(schema)
     for s in symbols:
         assert deserializer.deserialize(serializer.serialize(s)) == s
+
+def test_resolution():
+    schema_write = '''{
+        "type": "record",
+        "name": "User",
+        "fields": [
+            {"name": "a", "type": "int"},
+            {"name": "b", "type": "string"},
+            {"name": "c",  "type": ["int", "null"]},
+            {"name": "d",  "type": ["float", "null"]},
+            {"name": "e",  "type": {
+                    "type": "long",
+                    "logicalType": "timestamp-millis"
+                }
+            }
+        ]
+    }'''
+
+    schema_read = '''{
+        "type": "record",
+        "name": "User",
+        "fields": [
+            {"name": "a", "type": "double"},
+            {"name": "b", "type": "string"},
+            {"name": "c",  "type": ["float", "null"]},
+            {"name": "d",  "type": "float"},
+            {"name": "e",  "type": {
+                    "type": "long",
+                    "logicalType": "timestamp-millis"
+                }
+            },
+            {"name": "f", "type": "string", "default": "default f value"}
+        ]
+    }'''
+    serializer = Serializer(schema_write)
+    deserializer = pyavroc.AvroDeserializer(schema_read)
+    record = {
+        'a': 1,
+        'b': 'the string value',
+        'c': 2,
+        'd': 3.0,
+        'e': 12345,
+    }
+    rec_bytes = serializer.serialize(record)
+    deser_rec = deserializer.deserialize(rec_bytes, writer_schema=schema_write)
+    assert deser_rec['a'] == 1.0
+    assert deser_rec['b'] == 'the string value'
+    assert deser_rec['c'] == 2.0
+    assert deser_rec['d'] == 3.0
+    assert deser_rec['e'] == 12345
+    assert deser_rec['f'] == 'default f value'
+
