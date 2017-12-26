@@ -22,7 +22,6 @@
 #include "structmember.h"
 #include "error.h"
 
-
 static int
 AvroDeserializer_init(AvroDeserializer *self, PyObject *args, PyObject *kwds)
 {
@@ -46,6 +45,9 @@ AvroDeserializer_init(AvroDeserializer *self, PyObject *args, PyObject *kwds)
         return -1;
     }
     self->flags |= DESERIALIZER_SCHEMA_OK;
+
+    self->schema_json = malloc(strlen(schema_json) + 1);
+    strcpy(self->schema_json, schema_json);
 
     self->iface = avro_generic_class_from_schema(self->schema);
     if (self->iface == NULL) {
@@ -91,6 +93,10 @@ do_close(AvroDeserializer* self) {
     if (self->flags & DESERIALIZER_SCHEMA_OK) {
         avro_schema_decref(self->schema);
         self->flags &= ~DESERIALIZER_SCHEMA_OK;
+    }
+    if (self->schema_json != NULL){
+        free(self->schema_json);
+        self->schema_json = NULL;
     }
     if (self->iface != NULL) {
         avro_value_iface_decref(self->iface);
@@ -169,6 +175,17 @@ AvroDeserializer_close(AvroDeserializer *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject* AvroDeserializer_reduce(AvroDeserializer *self, PyObject *args)
+{
+    PyObject* tuple;
+    PyObject* obj;
+    PyObject* attr;
+    obj = (PyObject*)self;
+    attr = PyObject_GetAttrString(obj, "__class__");
+    tuple = Py_BuildValue("O(s)", attr, self->schema_json);
+    return tuple;
+}
+
 
 static PyMethodDef AvroDeserializer_methods[] = {
     {"close", (PyCFunction)AvroDeserializer_close, METH_VARARGS,
@@ -176,6 +193,9 @@ static PyMethodDef AvroDeserializer_methods[] = {
     },
     {"deserialize", (PyCFunction)AvroDeserializer_deserialize, METH_VARARGS | METH_KEYWORDS,
      "Deserialize a record."
+    },
+    {"__reduce__", (PyCFunction)AvroDeserializer_reduce, METH_VARARGS,
+     "AvroDeserializer Pickling support."
     },
     {NULL}  /* Sentinel */
 };
@@ -192,7 +212,7 @@ static PyMemberDef AvroDeserializer_members[] = {
 
 PyTypeObject avroDeserializerType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_pyavro.AvroDeserializer",            /* tp_name */
+    "pyavroc.AvroDeserializer",            /* tp_name */
     sizeof(AvroDeserializer),              /* tp_basicsize */
     0,                                     /* tp_itemsize */
     (destructor)AvroDeserializer_dealloc,  /* tp_dealloc */

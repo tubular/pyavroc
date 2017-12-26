@@ -43,6 +43,8 @@ AvroSerializer_init(AvroSerializer *self, PyObject *args, PyObject *kwds)
         return -1;
     }
     self->flags |= SERIALIZER_SCHEMA_OK;
+    self->schema_json = malloc(strlen(schema_json) + 1);
+    strcpy(self->schema_json, schema_json);
 
     self->iface = avro_generic_class_from_schema(self->schema);
     if (self->iface == NULL) {
@@ -84,6 +86,10 @@ do_close(AvroSerializer* self)
     if (self->flags & SERIALIZER_SCHEMA_OK) {
         avro_schema_decref(self->schema);
         self->flags &= ~SERIALIZER_SCHEMA_OK;
+    }
+    if (self->schema_json != NULL){
+        free(self->schema_json);
+        self->schema_json = NULL;
     }
     if (self->iface != NULL) {
         avro_value_iface_decref(self->iface);
@@ -152,6 +158,17 @@ AvroSerializer_close(AvroSerializer *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject* AvroSerializer_reduce(AvroSerializer *self, PyObject *args)
+{
+    PyObject* tuple;
+    PyObject* obj;
+    PyObject* attr;
+    obj = (PyObject*)self;
+    attr = PyObject_GetAttrString(obj, "__class__");
+    tuple = Py_BuildValue("O(s)", attr, self->schema_json);
+    return tuple;
+}
+
 static PyMethodDef AvroSerializer_methods[] = {
     {"close", (PyCFunction)AvroSerializer_close, METH_VARARGS,
      "Close Avro serializer."
@@ -159,12 +176,15 @@ static PyMethodDef AvroSerializer_methods[] = {
     {"serialize", (PyCFunction)AvroSerializer_serialize, METH_VARARGS,
      "Serialize a record."
     },
+    {"__reduce__", (PyCFunction)AvroSerializer_reduce, METH_VARARGS,
+     "AvroSerializer Pickling support."
+    },
     {NULL}  /* Sentinel */
 };
 
 PyTypeObject avroSerializerType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_pyavro.AvroSerializer",            /* tp_name */
+    "pyavroc.AvroSerializer",            /* tp_name */
     sizeof(AvroSerializer),              /* tp_basicsize */
     0,                                   /* tp_itemsize */
     (destructor)AvroSerializer_dealloc,  /* tp_dealloc */
