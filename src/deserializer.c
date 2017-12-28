@@ -46,8 +46,9 @@ AvroDeserializer_init(AvroDeserializer *self, PyObject *args, PyObject *kwds)
     }
     self->flags |= DESERIALIZER_SCHEMA_OK;
 
-    self->schema_json = malloc(strlen(schema_json) + 1);
-    strcpy(self->schema_json, schema_json);
+    size_t len = strlen(schema_json);
+    self->schema_json = malloc(len + 1);
+    strncpy(self->schema_json, schema_json, len + 1); // copy with \0 character
 
     self->iface = avro_generic_class_from_schema(self->schema);
     if (self->iface == NULL) {
@@ -177,12 +178,9 @@ AvroDeserializer_close(AvroDeserializer *self, PyObject *args)
 
 static PyObject* AvroDeserializer_reduce(AvroDeserializer *self, PyObject *args)
 {
-    PyObject* tuple;
-    PyObject* obj;
-    PyObject* attr;
-    obj = (PyObject*)self;
-    attr = PyObject_GetAttrString(obj, "__class__");
-    tuple = Py_BuildValue("O(s)", attr, self->schema_json);
+    PyObject* obj = (PyObject*)self;
+    PyObject* attr = PyObject_GetAttrString(obj, "__class__");
+    PyObject* tuple = Py_BuildValue("O(s)", attr, self->schema_json);
     return tuple;
 }
 
