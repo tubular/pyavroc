@@ -16,12 +16,12 @@
 
 set -eux
 
-cd $(dirname "$0")
-
 MYDIR=$(/bin/pwd)
 
 PYTHON=${PYTHON:-python3.5}
 
+# avro lib to link,
+# passed as an argument, e.g `./build_pyavroc.sh libavro.so.22.0.0`
 LIBAVRO=$1
 
 cd $MYDIR
