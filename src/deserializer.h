@@ -29,6 +29,7 @@ typedef struct {
 
     int flags;
     ConvertInfo info;
+    char* schema_json;
 
     avro_schema_t schema;
     avro_value_iface_t *iface;

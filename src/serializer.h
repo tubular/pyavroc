@@ -31,6 +31,7 @@ typedef struct {
     int flags;
     char *buffer;
     size_t buffer_size;
+    char* schema_json;
 
     avro_schema_t schema;
     avro_value_iface_t *iface;

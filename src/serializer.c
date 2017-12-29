@@ -44,6 +44,10 @@ AvroSerializer_init(AvroSerializer *self, PyObject *args, PyObject *kwds)
     }
     self->flags |= SERIALIZER_SCHEMA_OK;
 
+    size_t len = strlen(schema_json);
+    self->schema_json = malloc(len + 1);
+    strncpy(self->schema_json, schema_json, len + 1); // copy with \0 character
+
     self->iface = avro_generic_class_from_schema(self->schema);
     if (self->iface == NULL) {
         PyErr_SetString(PyExc_IOError,
@@ -84,6 +88,10 @@ do_close(AvroSerializer* self)
     if (self->flags & SERIALIZER_SCHEMA_OK) {
         avro_schema_decref(self->schema);
         self->flags &= ~SERIALIZER_SCHEMA_OK;
+    }
+    if (self->schema_json != NULL){
+        free(self->schema_json);
+        self->schema_json = NULL;
     }
     if (self->iface != NULL) {
         avro_value_iface_decref(self->iface);
@@ -152,6 +160,14 @@ AvroSerializer_close(AvroSerializer *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject* AvroSerializer_reduce(AvroSerializer *self, PyObject *args)
+{
+    PyObject* obj = (PyObject*)self;
+    PyObject* attr = PyObject_GetAttrString(obj, "__class__");
+    PyObject* tuple = Py_BuildValue("O(s)", attr, self->schema_json);
+    return tuple;
+}
+
 static PyMethodDef AvroSerializer_methods[] = {
     {"close", (PyCFunction)AvroSerializer_close, METH_VARARGS,
      "Close Avro serializer."
@@ -159,12 +175,15 @@ static PyMethodDef AvroSerializer_methods[] = {
     {"serialize", (PyCFunction)AvroSerializer_serialize, METH_VARARGS,
      "Serialize a record."
     },
+    {"__reduce__", (PyCFunction)AvroSerializer_reduce, METH_VARARGS,
+     "AvroSerializer Pickling support."
+    },
     {NULL}  /* Sentinel */
 };
 
 PyTypeObject avroSerializerType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_pyavro.AvroSerializer",            /* tp_name */
+    "pyavroc.AvroSerializer",            /* tp_name */
     sizeof(AvroSerializer),              /* tp_basicsize */
     0,                                   /* tp_itemsize */
     (destructor)AvroSerializer_dealloc,  /* tp_dealloc */
