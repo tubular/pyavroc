@@ -41,22 +41,28 @@ void pystring_concat_str(PyObject **, PyObject *);
 #define is_pystring(P) PyUnicode_CheckExact(P)
 #define is_pyint(P) PyLong_Check(P)
 #define is_pybytes(P) PyBytes_Check(P)
+#define is_pybytes_array(P) PyByteArray_Check(P)
 #define chars_to_pystring(C) PyUnicode_FromString(C)
 #define chars_size_to_pystring(C, N) PyUnicode_FromStringAndSize(C, N)
 #define chars_size_to_pybytes(C, N) PyBytes_FromStringAndSize(C, N)
 #define pybytes_to_chars(P) PyBytes_AsString(P)
 #define pybytes_to_chars_size(P, C, N) PyBytes_AsStringAndSize(P, C, N)
+#define pybytes_array_to_chars(P) PyByteArray_AsString(P)
+#define pybytes_array_get_len(P) PyByteArray_Size(P)
 #else
 #define long_to_pyint(L) PyInt_FromLong(L)
 #define pyint_to_long(P) PyInt_AsLong(P)
 #define is_pystring(P) (PyString_CheckExact(P) || PyUnicode_CheckExact(P))
 #define is_pyint(P) PyInt_Check(P)
 #define is_pybytes(P) PyString_Check(P)
+#define is_pybytes_array(P) PyByteArray_Check(P)
 #define chars_to_pystring(C) PyString_FromString(C)
 #define chars_size_to_pystring(C, N) PyString_FromStringAndSize(C, N)
 #define chars_size_to_pybytes(C, N) PyString_FromStringAndSize(C, N)
 #define pybytes_to_chars(P) PyString_AsString(P)
 #define pybytes_to_chars_size(P, C, N) PyString_AsStringAndSize(P, C, N)
+#define pybytes_array_to_chars(P) PyByteArray_AsString(P)
+#define pybytes_array_get_len(P) PyByteArray_Size(P)
 #endif
 
 #endif

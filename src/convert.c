@@ -533,7 +533,7 @@ validate(PyObject *pyobj, avro_schema_t schema) {
     case AVRO_BOOLEAN:
         return PyBool_Check(pyobj) ? 0 : -1;
     case AVRO_BYTES:
-        return is_pybytes(pyobj) ? 0 : -1;
+        return is_pybytes(pyobj) || is_pybytes_array(pyobj) ? 0 : -1;
     case AVRO_STRING:
         return is_pystring(pyobj) ? 0 : -1;
     case AVRO_INT32:
@@ -703,8 +703,16 @@ python_to_avro(ConvertInfo *info, PyObject *pyobj, avro_value_t *dest)
         {
             char *buf;
             Py_ssize_t len;
-            if (pybytes_to_chars_size(pyobj, &buf, &len) < 0) {
-                return set_type_error(EINVAL, pyobj);
+            if(is_pybytes(pyobj))
+            {
+                if (pybytes_to_chars_size(pyobj, &buf, &len) < 0) {
+                    return set_type_error(EINVAL, pyobj);
+                }
+            }
+            else if(is_pybytes_array(pyobj))
+            {
+                buf = pybytes_array_to_chars(pyobj);
+                len = pybytes_array_get_len(pyobj);
             }
             /* we're holding internal data so use "set" not "give" */
             return set_avro_error(avro_value_set_bytes(dest, buf, len));
