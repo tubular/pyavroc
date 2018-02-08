@@ -37,27 +37,18 @@ if cflags:
 
 extra_libs = os.environ.get('PYAVROC_LIBS', '').split()
 
-ext_modules = [
-    Extension(
-        'pyavroc/_pyavroc',
-        [
-            'src/pyavro.c',
-            'src/filereader.c',
-            'src/filewriter.c',
-            'src/serializer.c',
-            'src/deserializer.c',
-            'src/convert.c',
-            'src/record.c',
-            'src/avroenum.c',
-            'src/util.c',
-            'src/error.c'
-        ],
-        libraries=['avro'] + extra_libs,
-        include_dirs=['/usr/include', '/usr/local/include'],
-        library_dirs=['/usr/lib', '/usr/local/lib'],
-        runtime_library_dirs=['/usr/lib', '/usr/local/lib'],
-    )
-]
+ext_modules = [Extension('pyavroc/_pyavroc',
+                         ['src/pyavro.c',
+                          'src/filereader.c',
+                          'src/filewriter.c',
+                          'src/serializer.c',
+                          'src/deserializer.c',
+                          'src/convert.c',
+                          'src/record.c',
+                          'src/avroenum.c',
+                          'src/util.c',
+                          'src/error.c'],
+                         libraries=['avro'] + extra_libs)]
 
 setup(name='pyavroc',
       version=version,
@@ -80,34 +71,5 @@ setup(name='pyavroc',
       ],
       tests_require=['pytest'],
       packages=['pyavroc'],
-      package_data={
-          'pyavroc': [
-              'avro/NOTICE.txt'
-          ],
-      },  # in case it was included
-      data_files=[
-        ('lib', [
-            '/usr/lib/libavro.so.24.0.0',  # Tubular/avro lib
-            '/usr/lib/libavro.so',
-            '/usr/lib/libavro.a'
-        ]),
-        ('include', ['/usr/include/avro.h']),
-        ('include/avro', [
-            '/usr/include/avro/allocation.h',
-            '/usr/include/avro/basics.h',
-            '/usr/include/avro/consumer.h',
-            '/usr/include/avro/data.h',
-            '/usr/include/avro/errors.h',
-            '/usr/include/avro/generic.h',
-            '/usr/include/avro/io.h',
-            '/usr/include/avro/legacy.h',
-            '/usr/include/avro/msinttypes.h',
-            '/usr/include/avro/msstdint.h',
-            '/usr/include/avro/platform.h',
-            '/usr/include/avro/refcount.h',
-            '/usr/include/avro/resolver.h',
-            '/usr/include/avro/schema.h',
-            '/usr/include/avro/value.h',
-        ]),
-      ],
+      package_data={'pyavroc': ['avro/NOTICE.txt']},  # in case it was included
       ext_modules=ext_modules)
