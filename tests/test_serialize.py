@@ -39,7 +39,8 @@ SCHEMA = '''{
     {"name": "office", "type": "string"},
     {"name": "name", "type": "string"},
     {"name": "favorite_number",  "type": ["int", "null"]},
-    {"name": "data", "type": "bytes"}
+    {"name": "data", "type": "bytes"},
+    {"name": "data2", "type": ["null", "bytes"], "default": null}
   ]
 }'''
 
@@ -74,7 +75,7 @@ def test_serialize_record():
         avro_obj = avtypes.User(name=name, office=office, data=bytes(b'data bytes'))
         rec_bytes = serializer.serialize(avro_obj)
         deser_rec = deserializer.deserialize(rec_bytes)
-        assert set(deser_rec) == set(['name', 'office', 'favorite_number', 'data'])
+        assert set(deser_rec) == set(['name', 'office', 'favorite_number', 'data', 'data2'])
         assert deser_rec['name'] == name
         assert deser_rec['office'] == office
         assert deser_rec['favorite_number'] is None
@@ -88,14 +89,15 @@ def test_serialize_bytearray():
     deserializer = Deserializer(SCHEMA)
     for i in range(n_recs):
         name, office = "name-%d" % i, "office-%d" % i
-        avro_obj = avtypes.User(name=name, office=office, data=bytearray(b'data bytes'))
+        avro_obj = avtypes.User(name=name, office=office, data=bytearray(b'data bytes'), data2=bytearray(b'data2 bytes'))
         rec_bytes = serializer.serialize(avro_obj)
         deser_rec = deserializer.deserialize(rec_bytes)
-        assert set(deser_rec) == set(['name', 'office', 'favorite_number', 'data'])
+        assert set(deser_rec) == set(['name', 'office', 'favorite_number', 'data', 'data2'])
         assert deser_rec['name'] == name
         assert deser_rec['office'] == office
         assert deser_rec['favorite_number'] is None
         assert deser_rec['data'] == bytes(b'data bytes')
+        assert deser_rec['data2'] == bytes(b'data2 bytes')
 
 
 def test_big():
