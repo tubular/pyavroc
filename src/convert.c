@@ -485,7 +485,11 @@ get_branch_index(ConvertInfo *info, PyObject *pyobj, avro_schema_t schema)
     } else {
         if (is_pystring(pyobj)) {
             typename = "string";
-        } else if (PyList_CheckExact(pyobj)) {
+        }
+        else if (is_pybytes(pyobj) || is_pybytes_array(pyobj)) {
+            typename = "bytes";
+        }
+        else if (PyList_CheckExact(pyobj)) {
             typename = "array";
         } else {
             /* "long", "float" and Object types are the same for both. */
