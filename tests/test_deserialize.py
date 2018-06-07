@@ -15,7 +15,6 @@
 # limitations under the License.
 
 import sys
-
 import json
 
 import avro.schema
@@ -189,11 +188,11 @@ def test_bytes():
     }'''
 
     serializer = pyavroc.AvroSerializer(sch1)
-    deserializer = pyavroc.AvroDeserializer(sch1)
+    deserializer = pyavroc.AvroDeserializer(sch2)
     data = {"bytes_field": b'some bytes'}
 
     ser_python_avro = Serializer(sch1).serialize(data)
 
-    res_pyavroc = deserializer.deserialize(ser_python_avro, writer_schema=sch2)
+    res_pyavroc = deserializer.deserialize(ser_python_avro, writer_schema=sch1)
     res_python_avro = Deserializer(sch2).deserialize(ser_python_avro)
     assert res_pyavroc['bytes_field'] == res_python_avro['bytes_field'] == b'some bytes'
