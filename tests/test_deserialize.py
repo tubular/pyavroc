@@ -15,11 +15,10 @@
 # limitations under the License.
 
 import sys
-
 import json
 
 import avro.schema
-from avro.io import DatumWriter, BinaryEncoder
+from avro.io import DatumWriter, BinaryEncoder, DatumReader, BinaryDecoder
 
 import pytest
 
@@ -41,6 +40,18 @@ SCHEMA = '''{
     {"name": "favorite_number",  "type": ["int", "null"]}
   ]
 }'''
+
+
+class Deserializer(object):
+    def __init__(self, schema_str):
+        if sys.version_info >= (3,):
+            schema = avro.schema.Parse(schema_str)
+        else:
+            schema = avro.schema.parse(schema_str)
+        self.reader = DatumReader(schema)
+
+    def deserialize(self, rec_bytes):
+        return self.reader.read(BinaryDecoder(string_io(rec_bytes)))
 
 
 class Serializer(object):
@@ -158,3 +169,30 @@ def test_resolution():
     assert deser_rec['e'] == 12345
     assert deser_rec['f'] == 'default f value'
 
+
+def test_bytes():
+    sch1 = '''{
+        "type": "record",
+        "name": "Test",
+        "fields": [
+            {"name": "bytes_field", "type": "bytes"}
+        ]
+    }'''
+
+    sch2 = '''{
+        "type": "record",
+        "name": "Test",
+        "fields": [
+            {"name": "bytes_field", "type": "bytes"}
+        ]
+    }'''
+
+    serializer = pyavroc.AvroSerializer(sch1)
+    deserializer = pyavroc.AvroDeserializer(sch2)
+    data = {"bytes_field": b'some bytes'}
+
+    ser_python_avro = Serializer(sch1).serialize(data)
+
+    res_pyavroc = deserializer.deserialize(ser_python_avro, writer_schema=sch1)
+    res_python_avro = Deserializer(sch2).deserialize(ser_python_avro)
+    assert res_pyavroc['bytes_field'] == res_python_avro['bytes_field'] == b'some bytes'
