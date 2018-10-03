@@ -104,7 +104,7 @@ def test_big():
     avtypes = pyavroc.create_types(SCHEMA)
     serializer = pyavroc.AvroSerializer(SCHEMA)
     long_str = 'X' * (10 * 1024 * 1024)
-    avro_obj = avtypes.User(name=long_str, office=long_str)
+    avro_obj = avtypes.User(name=long_str, office=long_str, data=b'blah')
     serializer.serialize(avro_obj)
 
 
