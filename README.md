@@ -30,15 +30,24 @@ Name                                              | Description                 
 Building the module
 -------------------
 
-You will need to build Avro-C with a number of patches applied. This is available at https://github.com/Byhiras/avro.git, branch "patches".
+We've changed how to build the module, you now only have to:
 
-Then you can build pyavroc, linking against the Avro-C shared library.
-
-The pyavroc repository contains the script `clone_avro_and_build.sh` which automates this process:
-
-```bash
-./clone_avro_and_build.sh
+````
+make dist
+make publish JENKINS_HOST= JENKINS_JOB= S3_bucket=
 ```
+
+This will:
+1. clone the official apache avro repo
+1. take patches that are branches here: https://github.com/Tubular/avro
+1. merge them into the apache avro repo
+1. build apache/avro with the patches applied
+1. test apache/avro
+1. build tubular/pyavro (C-extension)
+1. test tubular/pyavro
+1. create a wheel out of tubular/pyavro
+1. publish the wheel to pypi repo on s3
+
 
 Writing records
 ---------------
