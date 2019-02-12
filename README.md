@@ -32,7 +32,7 @@ Building the module
 
 We've changed how to build the module, you now only have to:
 
-````
+```
 make dist
 make publish JENKINS_HOST= JENKINS_JOB= S3_bucket=
 ```
