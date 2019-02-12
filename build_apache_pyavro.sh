@@ -65,16 +65,11 @@ then
     cd $AVRO
     git config --local user.name Patch
     git config --local user.email patch@nowhere
-    git remote add fixedavro https://github.com/walshb/avro || echo
-    git remote update
-    do_merge fixedavro/avro-1902-c-namespace-null
-    do_merge fixedavro/avro-1904-record-no-fields
-    do_merge fixedavro/avro-1906-file-no-records
     git remote add tubularavro https://github.com/tubular/avro || echo
     git remote update
     do_merge tubularavro/patch/value-too-large
     do_merge tubularavro/patch/lz4-compression
-    do_merge tubularavro/patch/default-values
+    do_merge tubularavro/patch/default-values-2
 fi
 
 # build avro
@@ -134,6 +129,7 @@ then
     PYAVROC_LIBS=$(tr ' ' '\n' <$AVRO/build/src/CMakeFiles/avro-shared.dir/link.txt | grep -e '^-l\|dylib$' | grep -v 'libavro')
     export LDFLAGS="-L$AVRO/dist/lib ${PYAVROC_LIBS}"
     [ -d local_jansson ] && LDFLAGS="$LDFLAGS -L$MYDIR/local_jansson/build/lib"
+    export PYAVROC_LIBS=$(echo $PYAVROC_LIBS | sed 's/\-l//g')
 else
     export LDFLAGS="-L$AVRO/dist/lib -Wl,-rpath,$AVRO/dist/lib"
 fi
