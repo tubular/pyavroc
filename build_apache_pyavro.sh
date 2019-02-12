@@ -103,7 +103,7 @@ then
     [ $STATIC -eq 0 ] || rm -f $AVRO/dist/lib/libavro.dylib*
 fi
 
-PYTHON=${PYTHON:-python}
+PYTHON=${VENV_PYTHON:-python}
 
 # build avro python
 
@@ -130,9 +130,9 @@ if [ $STATIC -ne 0 ]
 then
     mkdir -p pyavroc/avro
     cp -v local_avro/NOTICE.txt pyavroc/avro/
-    # a bit cheesy: get libraries from the cmake link.txt file
-    export PYAVROC_LIBS=$(tr ' ' '\n' <$AVRO/build/src/CMakeFiles/avro-shared.dir/link.txt | grep '^-l' | cut -c3-)
-    export LDFLAGS="-L$AVRO/dist/lib"
+    # a bit cheesy: get libraries from the cmake link.txt file, except libavro
+    PYAVROC_LIBS=$(tr ' ' '\n' <$AVRO/build/src/CMakeFiles/avro-shared.dir/link.txt | grep -e '^-l\|dylib$' | grep -v 'libavro')
+    export LDFLAGS="-L$AVRO/dist/lib ${PYAVROC_LIBS}"
     [ -d local_jansson ] && LDFLAGS="$LDFLAGS -L$MYDIR/local_jansson/build/lib"
 else
     export LDFLAGS="-L$AVRO/dist/lib -Wl,-rpath,$AVRO/dist/lib"
@@ -147,4 +147,3 @@ cd tests
 $PYTHON -m pytest -sv .
 
 cd $MYDIR
-$PYTHON setup.py bdist_wheel

@@ -2,8 +2,10 @@
 *.pyc
 /build/
 /dist/
+*.whl
 *.iml
 *.egg-info
 .idea
 /local_avro/
+venv_pyavroc
 /*.egg-info/
