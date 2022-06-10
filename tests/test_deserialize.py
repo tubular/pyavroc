@@ -44,10 +44,7 @@ SCHEMA = '''{
 
 class Deserializer(object):
     def __init__(self, schema_str):
-        if sys.version_info >= (3,):
-            schema = avro.schema.Parse(schema_str)
-        else:
-            schema = avro.schema.parse(schema_str)
+        schema = avro.schema.parse(schema_str)
         self.reader = DatumReader(schema)
 
     def deserialize(self, rec_bytes):
@@ -57,10 +54,7 @@ class Deserializer(object):
 class Serializer(object):
 
     def __init__(self, schema_str):
-        if sys.version_info >= (3,):
-            schema = avro.schema.Parse(schema_str)
-        else:
-            schema = avro.schema.parse(schema_str)
+        schema = avro.schema.parse(schema_str)
         self.writer = DatumWriter(schema)
 
     def serialize(self, record):
@@ -117,6 +111,7 @@ def test_enum():
     deserializer = pyavroc.AvroDeserializer(schema)
     for s in symbols:
         assert deserializer.deserialize(serializer.serialize(s)) == s
+
 
 def test_resolution():
     schema_write = '''{

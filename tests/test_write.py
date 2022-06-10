@@ -15,7 +15,6 @@
 # limitations under the License.
 
 
-import sys
 import os
 import shutil
 import tempfile
@@ -101,9 +100,9 @@ def test_write_wrong_value():
             writer.close()
 
     expected_error = "when writing to Rec1.attr1, invalid python object '" \
-                     + ('x' * 99) + ", an integer is required"
+                     + ('x' * 99) + ", 'str' object cannot be interpreted as an integer"
     expected_error2 = "when writing to Rec1.attr1, invalid python object '" \
-                      + ('x' * 120) + "', an integer is required"
+                      + ('x' * 120) + "', 'str' object cannot be interpreted as an integer"
 
     assert expected_error in str(excinfo.value) \
         or expected_error2 in str(excinfo.value)

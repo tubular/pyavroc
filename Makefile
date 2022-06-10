@@ -18,7 +18,7 @@ $(VENV_PATH)/reqs_installed: $(VENV_PATH)
 	touch $(VENV_PATH)/reqs_installed
 
 $(VENV_PATH):
-	virtualenv -p $(shell which python3.5) -q $(VENV_PATH)
+	virtualenv -p $(shell which python) -q $(VENV_PATH)
 
 # NOTE(Christian): lint is the only thing that requires a venv
 # don't want to move this to docker because it requires .git dir

@@ -29,12 +29,7 @@
 #adff6ea1     -- applied via: tubularavro/patch/default-values
 #4a8e9338     -- applied via: tubularavro/patch/default-values
 #3edf0909     -- applied via: tubularavro/patch/lz4-compression
-#80c4533      -- applied via: fixedavro/avro-1906-file-no-records
-#5f4896c      -- fixed upstream via: https://github.com/apache/avro/commit/7f2afa8df4167435f4e92c715d65519d01bda2f8
-#473c974      -- applied via: fixedavro/avro-1904-record-no-fields
 #3db50a3      -- applied via: tubularavro/patch/value-too-large
-#eef7dd7a     -- applied via: fixedavro/avro-1902-c-namespace-null
-#4c83611d     -- fixed upstream via: https://github.com/apache/avro/commit/a3957200a86a4582c6622738caacd153f0ad7882
 #32065b4f     -- applied via: tubularavro/patch/default-values
 
 
@@ -65,16 +60,12 @@ then
     cd $AVRO
     git config --local user.name Patch
     git config --local user.email patch@nowhere
-    git remote add fixedavro https://github.com/walshb/avro || echo
-    git remote update
-    do_merge fixedavro/avro-1902-c-namespace-null
-    do_merge fixedavro/avro-1904-record-no-fields
-    do_merge fixedavro/avro-1906-file-no-records
+    git config --local commit.gpgsign false
     git remote add tubularavro https://github.com/tubular/avro || echo
     git remote update
     do_merge tubularavro/patch/value-too-large
     do_merge tubularavro/patch/lz4-compression
-    do_merge tubularavro/patch/default-values
+    do_merge tubularavro/patch/default-values-2
 fi
 
 # build avro
@@ -107,12 +98,7 @@ PYTHON=${VENV_PYTHON:-python}
 
 # build avro python
 
-case $($PYTHON -c 'import sys; print(sys.version_info.major)') in
-    3) AVROPY=$AVRO/lang/py3
-        ;;
-    *) AVROPY=$AVRO/lang/py
-       ;;
-esac
+AVROPY=$AVRO/lang/py
 
 cd $AVROPY
 

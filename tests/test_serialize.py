@@ -48,10 +48,7 @@ SCHEMA = '''{
 class Deserializer(object):
 
     def __init__(self, schema_str):
-        if sys.version_info >= (3,):
-            schema = avro.schema.Parse(schema_str)
-        else:
-            schema = avro.schema.parse(schema_str)
+        schema = avro.schema.parse(schema_str)
         self.reader = DatumReader(schema)
 
     def deserialize(self, rec_bytes):

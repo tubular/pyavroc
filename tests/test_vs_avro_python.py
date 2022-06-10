@@ -15,9 +15,7 @@
 # limitations under the License.
 
 
-import sys
 import os
-import pytest
 import shutil
 import tempfile
 
@@ -42,10 +40,7 @@ json_schema = '''{"namespace": "example.avro",
 
 
 def _python_create_file(filename):
-    if sys.version_info >= (3,):
-        schema = avro.schema.Parse(json_schema)
-    else:
-        schema = avro.schema.parse(json_schema)
+    schema = avro.schema.parse(json_schema)
 
     fp = open(filename, 'wb')
 
